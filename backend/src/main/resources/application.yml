@@ -1,0 +1,76 @@
+spring:
+  application:
+    name: studyhive-backend
+
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+
+  jackson:
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:google-client-id-placeholder}
+            client-secret: ${GOOGLE_CLIENT_SECRET:google-client-secret-placeholder}
+            scope:
+              - email
+              - profile
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+
+# Custom StudyHive Properties
+app:
+  jwt:
+    secret: ${JWT_SECRET:c3R1ZHloaXZlX3NlY3VyZV9qd3Rfc2VjcmV0X2tleV9mb3JfcHJvZHVjdGlvbl8yMDI2X21vZGVybF9nZW1pbmk=}
+    expiration-ms: 86400000 # 24 hours
+    refresh-expiration-ms: 604800000 # 7 days
+  otp:
+    expiration-minutes: 5
+    max-attempts: 3
+  resend:
+    api-key: ${RESEND_API_KEY:re_dummy_resend_api_key}
+    from: ${RESEND_FROM:StudyHive <onboarding@resend.dev>}
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000}
+
+logging:
+  level:
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
