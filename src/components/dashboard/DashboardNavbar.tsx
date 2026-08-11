@@ -13,6 +13,9 @@ import {
   User as UserIcon,
   Menu,
   Command,
+  ChevronDown,
+  Edit3,
+  ExternalLink,
 } from "lucide-react";
 import { GradientText } from "@/components/ui/gradient-text";
 
@@ -29,6 +32,7 @@ export function DashboardNavbar({
   const pathname = usePathname();
   const [user, setUser] = useState<any>(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [unreadCount, setUnreadCount] = useState(3);
 
@@ -106,7 +110,10 @@ export function DashboardNavbar({
             {/* Notification Bell Dropdown */}
             <div className="relative">
               <button
-                onClick={() => setShowNotifications(!showNotifications)}
+                onClick={() => {
+                  setShowNotifications(!showNotifications);
+                  setShowProfileMenu(false);
+                }}
                 className="relative p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-all"
               >
                 <Bell className="w-4.5 h-4.5" />
@@ -170,37 +177,108 @@ export function DashboardNavbar({
               <Settings className="w-4.5 h-4.5" />
             </button>
 
-            {/* User Profile Card Badge */}
-            {user && (
-              <div className="flex items-center gap-2.5 bg-slate-900/90 border border-slate-800 rounded-full p-1 pl-3">
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    {user.profileImage ? (
-                      <img
-                        src={user.profileImage}
-                        alt={user.name || "User"}
-                        className="w-7 h-7 rounded-full object-cover border border-indigo-500/40"
-                      />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-300">
-                        <UserIcon className="w-4 h-4" />
-                      </div>
-                    )}
-                    <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
-                  </div>
-                  <span className="text-xs font-bold text-white max-w-[100px] truncate hidden md:block">
-                    {user.name || "Scholar"}
-                  </span>
-                </div>
-
+            {/* User Profile Card Badge with Dropdown */}
+            {user ? (
+              <div className="relative">
                 <button
-                  onClick={handleLogout}
-                  title="Log Out"
-                  className="p-1.5 rounded-full bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                  onClick={() => {
+                    setShowProfileMenu(!showProfileMenu);
+                    setShowNotifications(false);
+                  }}
+                  className="flex items-center gap-2.5 bg-slate-900/90 border border-slate-800 hover:border-slate-700 rounded-full p-1 pl-3 transition-all"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      {user.profileImage ? (
+                        <img
+                          src={user.profileImage}
+                          alt={user.name || "User"}
+                          className="w-7 h-7 rounded-full object-cover border border-indigo-500/40"
+                        />
+                      ) : (
+                        <div className="w-7 h-7 rounded-full bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-300">
+                          <UserIcon className="w-4 h-4" />
+                        </div>
+                      )}
+                      <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
+                    </div>
+                    <span className="text-xs font-bold text-white max-w-[100px] truncate hidden md:block">
+                      {user.name || "Scholar"}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 mr-1.5" />
                 </button>
+
+                {/* Profile Dropdown Menu */}
+                <AnimatePresence>
+                  {showProfileMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 mt-2 w-56 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-2 z-50 space-y-1"
+                    >
+                      {/* User Brief */}
+                      <div className="px-3 py-2 border-b border-slate-800 mb-1">
+                        <div className="text-xs font-bold text-white truncate">{user.name || "Scholar"}</div>
+                        <div className="text-[10px] text-slate-400 truncate">{user.email}</div>
+                      </div>
+
+                      {/* View Profile */}
+                      <Link
+                        href="/profile"
+                        onClick={() => setShowProfileMenu(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-indigo-600/20 hover:border-indigo-500/30 border border-transparent transition-all"
+                      >
+                        <UserIcon className="w-4 h-4 text-indigo-400" />
+                        <span>View Profile</span>
+                      </Link>
+
+                      {/* Edit Profile */}
+                      <Link
+                        href="/profile?edit=true"
+                        onClick={() => setShowProfileMenu(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-purple-600/20 hover:border-purple-500/30 border border-transparent transition-all"
+                      >
+                        <Edit3 className="w-4 h-4 text-purple-400" />
+                        <span>Edit Profile</span>
+                      </Link>
+
+                      {/* Settings */}
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          if (onOpenModuleModal) {
+                            onOpenModuleModal("Account Settings", "Manage authentication security, preferences, and privacy controls.");
+                          }
+                        }}
+                        className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all text-left"
+                      >
+                        <Settings className="w-4 h-4 text-slate-400" />
+                        <span>Settings</span>
+                      </button>
+
+                      {/* Divider & Logout */}
+                      <div className="border-t border-slate-800 my-1 pt-1">
+                        <button
+                          onClick={() => {
+                            setShowProfileMenu(false);
+                            handleLogout();
+                          }}
+                          className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-all text-left"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
+            ) : (
+              <Link href="/login" className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-xs font-bold text-white hover:bg-indigo-500 transition-colors">
+                Log In
+              </Link>
             )}
 
           </div>
